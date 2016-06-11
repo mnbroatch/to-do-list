@@ -1,0 +1,83 @@
+//  populate array of list objects
+try {
+	var toDoArray = JSON.parse(localStorage.todo);
+} catch (e) {
+	var toDoArray = [];
+}
+
+$(document).ready( function(){
+
+	initializeTable();
+
+
+
+
+	$("#addButton").on('click', function(){
+		let elementToAdd 
+		let taskToAdd = new Task( $('#newDescription').val(), $('#newDueDate').val() );
+		addToDOM( createTaskElement(taskToAdd) ); //  element must be added to DOM first. How can I remove this dependency?
+		addToList(taskToAdd);
+		writeListToStorage();
+	});
+
+	$("#toDoListTable").on('change', '.done-checkbox', function(){
+		let index = $(this).closest('tr').data('index');
+		toDoArray[index].done ^= 1;  // bitwise just for fun :D 
+		writeListToStorage();
+	});
+
+	$("#toDoListTable").on('change', '.done-checkbox', function(){
+		let index = $(this).closest('tr').data('index');
+		
+		writeListToStorage();
+	});
+
+
+
+});
+
+
+
+
+function Task(description,dueDate){
+	this.description = description;
+	this.dueDate = dueDate;
+	this.done = false;
+}
+
+function removeFromList (task) {
+	toDoArray.splice(task.index(), 1);
+}
+
+function removeFromDOM (task) {
+	this.remove();
+}
+
+function addToList(task) {
+	toDoArray.push(task);
+}
+
+function addToDOM($task) {
+	$('#toDoListTable').append($task);
+}
+
+function createTaskElement(task) {
+	let $rowToAdd = $('#entryTemplate').clone();
+	$rowToAdd.removeAttr('id');
+	$rowToAdd.data('index', toDoArray.length);
+	$rowToAdd.find('.description').text(task.description);
+	$rowToAdd.find('.due-date').text(task.dueDate);
+	$rowToAdd.find('.done-checkbox').attr('checked',task.done);
+	return $rowToAdd;
+}
+
+function writeListToStorage(){
+	localStorage.todo = JSON.stringify(toDoArray);
+}
+
+function initializeTable() {
+	var $tasks = toDoArray.map( task => createTaskElement(task) );
+	$('#toDoListTable').append($tasks);
+}
+
+

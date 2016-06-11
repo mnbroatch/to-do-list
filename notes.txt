@@ -1,0 +1,11 @@
+table with 
+	- description
+	- due date
+	- checkmark for done
+
+crud!
+
+
+sort by clicking header?
+style (stripes)
+style completed differently
