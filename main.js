@@ -57,15 +57,15 @@ function Task(description,dueDate){
 
 Object.defineProperty(Task.prototype, '$element', { get: taskElementGetter });
 
-		function taskElementGetter() { 
-			let $rowToAdd = $('#entryTemplate').clone();
-			$rowToAdd.removeAttr('id');
-			$rowToAdd.find('.description').text(this.description);
-			$rowToAdd.find('.due-date').text(this.dueDate);
-			$rowToAdd.find('.done-checkbox').attr('checked',this.done);
-			$rowToAdd.data('index', this.index);
-			return $rowToAdd;
-		}
+function taskElementGetter() { 
+	let $rowToAdd = $('#entryTemplate').clone();
+	$rowToAdd.removeAttr('id');
+	$rowToAdd.find('.description').text(this.description);
+	$rowToAdd.find('.due-date').text(this.dueDate);
+	$rowToAdd.find('.done-checkbox').attr('checked',this.done);
+	$rowToAdd.data('index', this.index);
+	return $rowToAdd;
+}
 
 function removeFromList(task) {
 	toDoArray.splice( $(task).data('index'), 1);
