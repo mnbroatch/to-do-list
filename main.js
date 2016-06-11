@@ -14,7 +14,7 @@ try {
 
 
 // (is there a faster way?)
-for (task in toDoArray){
+for (let task in toDoArray){
 	Object.defineProperty(toDoArray[task], '$element', { get: taskElementGetter }); 
 }
 
