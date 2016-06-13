@@ -37,6 +37,26 @@ $(document).ready( function(){
 		writeListToStorage();
 	});
 
+	$('#toDoListTable tbody').on('click','.delete-button button', function(e) {
+				$('#deleteDoneButton').off();
+				$('#toDoListTable tbody').off();
+		removeTask(e.target);
+	});
+
+	$('#toDoListTable').on('dblclick', '.description', function(e){
+		displayEditField(e.target);
+		writeListToStorage();
+	});
+
+	$('#deleteDoneButton').on('click', function(e){
+				$('#deleteDoneButton').off();
+				$('#toDoListTable tbody').off();
+		$('input:checked').each( function(ind,el){
+			removeTask(el);
+		});
+		writeListToStorage();
+	});
+
 	$('#toDoListTable').on('change', '.done-checkbox', function(){
 		let index = $(this).closest('tr').data('index');
 		toDoArray[index].done = !toDoArray[index].done 
@@ -44,22 +64,35 @@ $(document).ready( function(){
 	}
 	);
 
-	$('#toDoListTable').on('click','.delete-button button', function(e) {
-		$('#toDoListTable').off();
-		removeTask(e.target);
-	});
-
-	$('#deleteDoneButton').on('click', function(e){
-		$('#toDoListTable').off();
-		$('input:checked').each( function(ind,el){
-			removeTask(el);
-		});
-		writeListToStorage();
-	});
-
 });
 
 
+function displayEditField(field) {
+
+	if ( $(field).hasClass('description') ) {
+		var $editDescriptionField = $('<input type="text" class="edit-description" />');
+	}
+	else if ( $(field).hasClass('due-date') ) {
+		var $editDescriptionField = $('<input type="date" class="edit-description" />');
+	}
+		
+	var oldDescription = $(field).text();
+
+	$(field).empty().append($editDescriptionField);
+	$editDescriptionField.focus().val(oldDescription);
+
+	$editDescriptionField.on('blur keypress', function(e){
+		if (e.which === 0 || e.which === 13) {	
+			if ($(field).val()){
+				$(field).empty().text($editDescriptionField.val());
+			}
+			else {
+				$(field).empty().text(oldDescription);
+			}
+		}
+
+	});
+}
 
 
 
@@ -87,9 +120,10 @@ function taskElementGetter() {
 	return $rowToAdd;
 }
 
-function removeTask(deleteButton){
-	removeFromList($(deleteButton).closest('tr'));	
-	removeFromDOM($(deleteButton).closest('tr'));	
+function removeTask(task){
+			console.log("asd");
+	removeFromList($(task).closest('tr'));	
+	removeFromDOM($(task).closest('tr'));	
 	writeListToStorage();
 }
 
@@ -102,11 +136,12 @@ function removeFromDOM($task) {
 
 	//  fix data(index)s after removing from toDoArray
 	var taskInd = $task.index();
-	for (let i = taskInd, len = $('#toDoListTable>tbody>tr').length; i < len; i++){
+	for (let i = taskInd + 1, len = $('#toDoListTable>tbody>tr').length; i < len; i++){
 		var ind = $( $('#toDoListTable>tbody>tr')[i]).data('index');
 		ind--;
 		$( $('#toDoListTable>tbody>tr')[i] ).data('index',ind);
 	}
+
 
 	$task
 	.children('td')
@@ -117,31 +152,25 @@ function removeFromDOM($task) {
 		var row = $(this).closest('tr');
 		row.remove();
 
+		//  reattach event handlers, check if they exist so multi-delete works OK
+		
+		if (!$._data($(document).find('#toDoListTable tbody')[0], "events")){ 
 
-
-
-//  reattach event handlers, check if they exist so multi-delete works OK
-		if( !$._data(document.getElementById('toDoListTable'), "events")){ 
-			console.log('asd');
-			$('#toDoListTable').on('change', '.done-checkbox', function(){
-				$('#toDoListTable').off();
-				let index = $(this).closest('tr').data('index');
-				toDoArray[index].done = !toDoArray[index].done 
+			$('#deleteDoneButton').on('click', function(e){
+				$('#deleteDoneButton').off();
+				$('#toDoListTable tbody').off();
+				$('input:checked').each( function(ind,el){
+					removeTask(el);
+				});
 				writeListToStorage();
-			}
-			);
-
-			$('#toDoListTable').on('click','.delete-button button', function(e) {
-				$('#toDoListTable').off();
-				removeTask(e.target);
 			});
 
+			$('#toDoListTable tbody').on('click','.delete-button button', function(e) {
+				$('#deleteDoneButton').off();
+				$('#toDoListTable tbody').off();
+				removeTask(e.target);
+			});
 		}
-
-
-
-
-
 
 
 
