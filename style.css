@@ -1,6 +1,7 @@
 body {
 	background-color:#f6e7d2;
 	text-align:center;
+	min-width:650px;
 }
 
 h1 {
@@ -21,6 +22,10 @@ input[type=checkbox] {
 	margin-left:10px;
 }
 
+#top-controls {
+	position:relative;
+}
+
 #newEntryArea {
 	border:2px solid black;
 	border-radius:10px;
@@ -29,6 +34,19 @@ input[type=checkbox] {
 	background-color:white;
 	margin-top:10px;
 }
+
+
+#deleteDoneButton {
+	padding:10px;
+	background-color:red;
+	font-size:1.1em;
+	font-weight:bold;
+	color:white;
+	position:absolute;
+	margin-left:15px;
+	margin-top:35px;
+}
+
 
 #toDoListTable{
 	margin-top:20px;
@@ -40,12 +58,12 @@ input[type=checkbox] {
 	margin-bottom:50px;
 }
 
-#toDoListTable>tr:nth-child(even){
-	background-color:#cdfffd;
+#toDoListTable>tbody>tr{
+	transition: background-color .4s ease;
 }
 
-#toDoListTable>tr:last-child>td{
-	padding-bottom:20px;
+#toDoListTable>tbody>tr:nth-child(odd){
+	background-color:#cdfffd;
 }
 
 #toDoListTable>tr:first-child>td{
@@ -66,8 +84,23 @@ input[type=checkbox] {
 .done {
 }
 
+th.delete-button {
+	visibility:hidden;
+}
+
 .delete-button span {
 padding-top:4px;
 }
+
+.turn-light {
+	background-color:#cdfffd;
+}
+
+.turn-dark {
+	background-color:#01b6ad;
+}
+
+
+
 
 

@@ -1,3 +1,7 @@
+"use strict";
+
+var isAnimated = false;
+
 //  populate array of list objects
 try {
 	var toDoArray = JSON.parse(localStorage.todo);
@@ -15,6 +19,7 @@ try {
 
 // (is there a faster way?)
 for (let task in toDoArray){
+	Object.defineProperty(toDoArray[task], 'ind', { get: taskIndexGetter });
 	Object.defineProperty(toDoArray[task], '$element', { get: taskElementGetter }); 
 }
 
@@ -25,8 +30,8 @@ $(document).ready( function(){
 
 	$('#addButton').on('click', function(){
 		let taskToAdd = new Task( $('#newDescription').val(), $('#newDueDate').val() );
-		addToDOM( taskToAdd.$element ); //  element must be added to DOM first. How can I remove this dependency?
 		addToList(taskToAdd);
+		addToDOM( taskToAdd.$element ); //  element must be added to list first. 
 		$("#newDescription").val("");
 		$("#newDueDate").val("");
 		writeListToStorage();
@@ -34,13 +39,21 @@ $(document).ready( function(){
 
 	$('#toDoListTable').on('change', '.done-checkbox', function(){
 		let index = $(this).closest('tr').data('index');
-		toDoArray[index].done ^= 1;  // bitwise just for fun :D 
+		toDoArray[index].done = !toDoArray[index].done 
 		writeListToStorage();
+	}
+	);
+
+	$('#toDoListTable').on('click','.delete-button button', function(e) {
+		$('#toDoListTable').off();
+		removeTask(e.target);
 	});
 
-	$('#toDoListTable').on('click','.delete-button', function(){
-		removeFromList(this);	
-		removeFromDOM($(this).closest('tr'));	
+	$('#deleteDoneButton').on('click', function(e){
+		$('#toDoListTable').off();
+		$('input:checked').each( function(ind,el){
+			removeTask(el);
+		});
 		writeListToStorage();
 	});
 
@@ -48,14 +61,21 @@ $(document).ready( function(){
 
 
 
+
+
+
 function Task(description,dueDate){
 	this.description = description;
 	this.dueDate = dueDate;
 	this.done = false;
-	this.index = toDoArray.length;
 }
 
 Object.defineProperty(Task.prototype, '$element', { get: taskElementGetter });
+Object.defineProperty(Task.prototype, 'ind', { get: taskIndexGetter });
+
+function taskIndexGetter() { 
+	return toDoArray.indexOf(this);
+}
 
 function taskElementGetter() { 
 	let $rowToAdd = $('#entryTemplate').clone();
@@ -63,16 +83,86 @@ function taskElementGetter() {
 	$rowToAdd.find('.description').text(this.description);
 	$rowToAdd.find('.due-date').text(this.dueDate);
 	$rowToAdd.find('.done-checkbox').attr('checked',this.done);
-	$rowToAdd.data('index', this.index);
+	$rowToAdd.data('index', this.ind);
 	return $rowToAdd;
 }
 
-function removeFromList(task) {
-	toDoArray.splice( $(task).data('index'), 1);
+function removeTask(deleteButton){
+	removeFromList($(deleteButton).closest('tr'));	
+	removeFromDOM($(deleteButton).closest('tr'));	
+	writeListToStorage();
 }
 
-function removeFromDOM(task) {
-	$(task).remove();
+function removeFromList($task) {
+	let elIndex = $task.data('index');
+	toDoArray.splice( elIndex, 1);
+}
+
+function removeFromDOM($task) {
+
+	//  fix data(index)s after removing from toDoArray
+	var taskInd = $task.index();
+	for (let i = taskInd, len = $('#toDoListTable>tbody>tr').length; i < len; i++){
+		var ind = $( $('#toDoListTable>tbody>tr')[i]).data('index');
+		ind--;
+		$( $('#toDoListTable>tbody>tr')[i] ).data('index',ind);
+	}
+
+	$task
+	.children('td')
+	.animate({ padding: 0 })
+	.wrapInner('<div />')
+	.children()
+	.slideUp( function(){ 
+		var row = $(this).closest('tr');
+		row.remove();
+
+
+
+
+//  reattach event handlers, check if they exist so multi-delete works OK
+		if( !$._data(document.getElementById('toDoListTable'), "events")){ 
+			console.log('asd');
+			$('#toDoListTable').on('change', '.done-checkbox', function(){
+				$('#toDoListTable').off();
+				let index = $(this).closest('tr').data('index');
+				toDoArray[index].done = !toDoArray[index].done 
+				writeListToStorage();
+			}
+			);
+
+			$('#toDoListTable').on('click','.delete-button button', function(e) {
+				$('#toDoListTable').off();
+				removeTask(e.target);
+			});
+
+		}
+
+
+
+
+
+
+
+
+	});
+
+
+
+
+
+
+
+
+
+	$('#toDoListTable>tbody>tr').each( function(ind, el) {
+		if ( $(el).data('index') % 2) {
+			$(el).css('background-color','#01b6ad');
+		}
+		else {
+			$(el).css('background-color','#cdfffd');
+		}
+	});
 }
 
 function addToList(task) {
